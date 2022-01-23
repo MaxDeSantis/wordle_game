@@ -24,6 +24,8 @@ fn print_intro() {
 fn game_loop() -> bool {
     let guess_count = 6;
     let mut guess = String::new();
+    let word: &str = "hello";
+
 
     for i in 1..guess_count {
         // Ask for user input
@@ -37,9 +39,9 @@ fn game_loop() -> bool {
             guess = guess.trim().to_string();
         
             if guess.len() != 5 {
-                println!("That isn't 5 letters! Try again: ");
+                println!("\x1b[91mThat isn't 5 letters!\x1b[0m Try again: ");
             } else if !guess.chars().all(char::is_alphabetic) {
-                println!("Uh oh! That entry has more than letters. Try again: ")
+                println!("\x1b[91mLetters only!\x1b[0m Try again: ")
             } else {
                 break;
             }
@@ -48,9 +50,35 @@ fn game_loop() -> bool {
         // Reprint user's input
         println!("You guessed: {}", guess);
 
-        // Compute usage
+        // Guessed the correct word!
+        if guess.eq(word) {
+            return true;
+        }
 
+        let guess_chars: Vec<char> = guess.chars().collect();
+        let word_chars: Vec<char> = word.chars().collect();
+        let mut parsed_indices: Vec<i32> = Vec::new();
 
+        for i in 0..guess_chars.len() {
+            
+            // this is fucked up redo it later
+            for j in 0..word_chars.len() {
+                if !(parsed_indices.contains(&(j as i32))) && guess_chars[i] == word_chars[j] {
+                    if i == j {
+                        println!("\x1b[92m{}\x1b[0m", guess_chars[i]);
+                        parsed_indices.push(j as i32);
+                        break;
+                    }
+                    else {
+                        println!("\x1b[93m{}\x1b[0m", guess_chars[i]);
+                        parsed_indices.push(j as i32);
+                        break;
+                    }
+                }
+                println!("hi");
+            }
+            println!("hi2");
+        }
     }
 
     // Evaluate victory condition and return
