@@ -1,15 +1,13 @@
+/*
+Author:     Max DeSantis
+Info:       Implementation of popular game WORDLE in Rust, as a learning exercise.
+*/
 
-// 1. Import words randomly from stored list.
-
-// 2. Print introduction information to player
-
-// 3. Ask for guess
-
-// 4. Compare guess to word. Reprint with highlighted letters.
-
-// 5. If guess word is correct, winner!
-
-use std::io;
+use std::io::{self, Write};
+use std::time;
+use std::thread;
+use std::env;
+use std::fs;
 
 fn print_intro() {
     println!("Welcome to WORDLE\n");
@@ -19,17 +17,23 @@ fn print_intro() {
     Letters not in the word will remain white.\n");
 }
 
+fn grab_new_word() -> String {
+    let mut newWord:String = "hello".to_string();
+    // Open file
+    let contents = fs::read_to_string("word_list.txt")
+        .expect("Failed to read word list!");
+    // Randomly read line
 
+    return newWord;
+}
 // Handles player input for each guess. Returns whether they succeeded in guessing the word.
-fn game_loop() -> bool {
+fn game_loop(word:&str) -> bool {
     let guess_count = 6;
     let mut guess = String::new();
-    let word: &str = "hello";
-
 
     for i in 1..guess_count {
         // Ask for user input
-        println!("Guess #{}: ", i);
+        println!("\r\nGuess #{}: ", i);
 
         loop {
             // Get new input
@@ -50,39 +54,30 @@ fn game_loop() -> bool {
         // Reprint user's input
         println!("You guessed: {}", guess);
 
+
+        // Parse user's guess and output green letter for correct placement, yellow for incorrect placement, and normal for wrong letter.
+        for (i, c) in guess.chars().enumerate() {
+            if c == word.as_bytes()[i] as char {    // Letter in correct position
+                print!("\x1b[92m{}\x1b[0m ", c);
+            } else if word.contains(c){             // Letter in wrong position, but is present
+                print!("\x1b[95m{}\x1b[0m ", c);
+            } else {
+                print!("{} ", c);                   // Letter is not present
+            }
+            let now = time::Instant::now();
+            thread::sleep(time::Duration::from_millis(500));
+            assert!(now.elapsed() >= time::Duration::from_millis(500));
+            io::stdout().flush().unwrap();
+        }
+
         // Guessed the correct word!
         if guess.eq(word) {
             return true;
         }
-
-        let guess_chars: Vec<char> = guess.chars().collect();
-        let word_chars: Vec<char> = word.chars().collect();
-        let mut parsed_indices: Vec<i32> = Vec::new();
-
-        for i in 0..guess_chars.len() {
-            
-            // this is fucked up redo it later
-            for j in 0..word_chars.len() {
-                if !(parsed_indices.contains(&(j as i32))) && guess_chars[i] == word_chars[j] {
-                    if i == j {
-                        println!("\x1b[92m{}\x1b[0m", guess_chars[i]);
-                        parsed_indices.push(j as i32);
-                        break;
-                    }
-                    else {
-                        println!("\x1b[93m{}\x1b[0m", guess_chars[i]);
-                        parsed_indices.push(j as i32);
-                        break;
-                    }
-                }
-                println!("hi");
-            }
-            println!("hi2");
-        }
     }
 
     // Evaluate victory condition and return
-    true
+    return false
 }
 
 // Victory/defeat message and asks the player if they want to play again
@@ -107,12 +102,12 @@ fn game_over_prompt(victorious: bool) -> bool{
 }
 
 
-
+// Handles game entry point and loop if playing again
 fn main() {
     print_intro();
 
     loop {
-        let game_result = game_loop();
+        let game_result = game_loop("hello");
 
         // Ask if the user wants to play again. If so, run game_loop. If not, exit.
         let play_again: bool = game_over_prompt(game_result);
