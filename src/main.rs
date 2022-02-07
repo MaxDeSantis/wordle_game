@@ -2,11 +2,11 @@
 Author:     Max DeSantis
 Info:       Implementation of popular game WORDLE in Rust, as a learning exercise.
 */
+extern crate rand;
 
-use std::io::{self, Write};
+use std::io::{self, Write, Read, BufRead, BufReader};
 use std::time;
 use std::thread;
-use std::env;
 use std::fs;
 
 fn print_intro() {
@@ -18,13 +18,17 @@ fn print_intro() {
 }
 
 fn grab_new_word() -> String {
-    let mut newWord:String = "hello".to_string();
-    // Open file
-    let contents = fs::read_to_string("word_list.txt")
-        .expect("Failed to read word list!");
-    // Randomly read line
 
-    return newWord;
+    let buf = BufReader::new(fs::File::open("./word_list.txt").expect("Failed to read word list!"));
+    
+    let lines: Vec<_> = buf.lines().collect();
+    let line_count = lines.len();
+
+    let random_line_number = rand::random::<usize>() % line_count;
+
+    let new_word:String = lines.into_iter().nth(random_line_number).expect("Unable to find word").unwrap();
+
+    return new_word;
 }
 // Handles player input for each guess. Returns whether they succeeded in guessing the word.
 fn game_loop(word:&str) -> bool {
@@ -83,9 +87,9 @@ fn game_loop(word:&str) -> bool {
 // Victory/defeat message and asks the player if they want to play again
 fn game_over_prompt(victorious: bool) -> bool{
     if victorious {
-        println!("Congratulations! You've guessed the word.\n");
+        println!("\r\nCongratulations! You've guessed the word.\n");
     } else {
-        println!("Defeat!\n")
+        println!("\r\nDefeat!\n")
     }
 
     println!("Would you like to try again? [yes/no]");
@@ -107,7 +111,8 @@ fn main() {
     print_intro();
 
     loop {
-        let game_result = game_loop("hello");
+        let random_word = grab_new_word();
+        let game_result = game_loop(&random_word);
 
         // Ask if the user wants to play again. If so, run game_loop. If not, exit.
         let play_again: bool = game_over_prompt(game_result);
