@@ -85,11 +85,11 @@ fn game_loop(word:&str) -> bool {
 }
 
 // Victory/defeat message and asks the player if they want to play again
-fn game_over_prompt(victorious: bool) -> bool{
+fn game_over_prompt(victorious: bool, word: String) -> bool{
     if victorious {
         println!("\r\nCongratulations! You've guessed the word.\n");
     } else {
-        println!("\r\nDefeat!\n")
+        println!("\r\nDefeat! The word was {}\n", word)
     }
 
     println!("Would you like to try again? [yes/no]");
@@ -115,7 +115,7 @@ fn main() {
         let game_result = game_loop(&random_word);
 
         // Ask if the user wants to play again. If so, run game_loop. If not, exit.
-        let play_again: bool = game_over_prompt(game_result);
+        let play_again: bool = game_over_prompt(game_result, random_word);
         if !play_again {
             break;
         }
